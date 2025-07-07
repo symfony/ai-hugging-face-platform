@@ -77,7 +77,7 @@ final readonly class ModelClient implements PlatformModelClient
         if (\is_string($payload) || !(isset($payload['body']) || isset($payload['json']))) {
             $payload = ['json' => ['inputs' => $payload]];
 
-            if (0 !== \count($options)) {
+            if ([] !== $options) {
                 $payload['json']['parameters'] = $options;
             }
         }
