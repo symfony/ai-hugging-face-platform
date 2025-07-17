@@ -13,9 +13,9 @@ namespace Symfony\AI\Platform\Bridge\HuggingFace;
 
 use Symfony\AI\Platform\Model;
 use Symfony\AI\Platform\ModelClientInterface as PlatformModelClient;
+use Symfony\AI\Platform\Response\RawHttpResponse;
 use Symfony\Component\HttpClient\EventSourceHttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * @author Christopher Hertel <mail@christopher-hertel.de>
@@ -41,16 +41,16 @@ final readonly class ModelClient implements PlatformModelClient
     /**
      * The difference in HuggingFace here is that we treat the payload as the options for the request not only the body.
      */
-    public function request(Model $model, array|string $payload, array $options = []): ResponseInterface
+    public function request(Model $model, array|string $payload, array $options = []): RawHttpResponse
     {
         // Extract task from options if provided
         $task = $options['task'] ?? null;
         unset($options['task']);
 
-        return $this->httpClient->request('POST', $this->getUrl($model, $task), [
+        return new RawHttpResponse($this->httpClient->request('POST', $this->getUrl($model, $task), [
             'auth_bearer' => $this->apiKey,
             ...$this->getPayload($payload, $options),
-        ]);
+        ]));
     }
 
     private function getUrl(Model $model, ?string $task): string

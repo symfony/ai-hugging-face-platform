@@ -25,12 +25,13 @@ use Symfony\AI\Platform\Exception\RuntimeException;
 use Symfony\AI\Platform\Model;
 use Symfony\AI\Platform\Response\BinaryResponse;
 use Symfony\AI\Platform\Response\ObjectResponse;
-use Symfony\AI\Platform\Response\ResponseInterface as LlmResponse;
+use Symfony\AI\Platform\Response\RawHttpResponse;
+use Symfony\AI\Platform\Response\RawResponseInterface;
+use Symfony\AI\Platform\Response\ResponseInterface;
 use Symfony\AI\Platform\Response\TextResponse;
 use Symfony\AI\Platform\Response\VectorResponse;
 use Symfony\AI\Platform\ResponseConverterInterface as PlatformResponseConverter;
 use Symfony\AI\Platform\Vector\Vector;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * @author Christopher Hertel <mail@christopher-hertel.de>
@@ -42,29 +43,30 @@ final readonly class ResponseConverter implements PlatformResponseConverter
         return true;
     }
 
-    public function convert(ResponseInterface $response, array $options = []): LlmResponse
+    public function convert(RawResponseInterface|RawHttpResponse $response, array $options = []): ResponseInterface
     {
-        if (503 === $response->getStatusCode()) {
+        $httpResponse = $response->getRawObject();
+        if (503 === $httpResponse->getStatusCode()) {
             return throw new RuntimeException('Service unavailable.');
         }
 
-        if (404 === $response->getStatusCode()) {
+        if (404 === $httpResponse->getStatusCode()) {
             return throw new InvalidArgumentException('Model, provider or task not found (404).');
         }
 
-        $headers = $response->getHeaders(false);
+        $headers = $httpResponse->getHeaders(false);
         $contentType = $headers['content-type'][0] ?? null;
-        $content = 'application/json' === $contentType ? $response->toArray(false) : $response->getContent(false);
+        $content = 'application/json' === $contentType ? $httpResponse->toArray(false) : $httpResponse->getContent(false);
 
-        if (str_starts_with((string) $response->getStatusCode(), '4')) {
+        if (str_starts_with((string) $httpResponse->getStatusCode(), '4')) {
             $message = \is_string($content) ? $content :
                 (\is_array($content['error']) ? $content['error'][0] : $content['error']);
 
-            throw new InvalidArgumentException(\sprintf('API Client Error (%d): %s', $response->getStatusCode(), $message));
+            throw new InvalidArgumentException(\sprintf('API Client Error (%d): %s', $httpResponse->getStatusCode(), $message));
         }
 
-        if (200 !== $response->getStatusCode()) {
-            throw new RuntimeException('Unhandled response code: '.$response->getStatusCode());
+        if (200 !== $httpResponse->getStatusCode()) {
+            throw new RuntimeException('Unhandled response code: '.$httpResponse->getStatusCode());
         }
 
         $task = $options['task'] ?? null;
