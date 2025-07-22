@@ -47,11 +47,11 @@ final readonly class ResultConverter implements PlatformResponseConverter
     {
         $httpResponse = $result->getObject();
         if (503 === $httpResponse->getStatusCode()) {
-            return throw new RuntimeException('Service unavailable.');
+            throw new RuntimeException('Service unavailable.');
         }
 
         if (404 === $httpResponse->getStatusCode()) {
-            return throw new InvalidArgumentException('Model, provider or task not found (404).');
+            throw new InvalidArgumentException('Model, provider or task not found (404).');
         }
 
         $headers = $httpResponse->getHeaders(false);
