@@ -59,10 +59,13 @@ final readonly class ResultConverter implements PlatformResponseConverter
         $content = 'application/json' === $contentType ? $httpResponse->toArray(false) : $httpResponse->getContent(false);
 
         if (str_starts_with((string) $httpResponse->getStatusCode(), '4')) {
-            $message = \is_string($content) ? $content :
-                (\is_array($content['error']) ? $content['error'][0] : $content['error']);
+            $message = match (true) {
+                \is_string($content) => $content,
+                \is_array($content['error']) => $content['error'][0],
+                default => $content['error'],
+            };
 
-            throw new InvalidArgumentException(\sprintf('API Client Error (%d): %s', $httpResponse->getStatusCode(), $message));
+            throw new InvalidArgumentException(\sprintf('API Client Error (%d): ', $httpResponse->getStatusCode()).$message);
         }
 
         if (200 !== $httpResponse->getStatusCode()) {
@@ -72,9 +75,7 @@ final readonly class ResultConverter implements PlatformResponseConverter
         $task = $options['task'] ?? null;
 
         return match ($task) {
-            Task::AUDIO_CLASSIFICATION, Task::IMAGE_CLASSIFICATION => new ObjectResult(
-                ClassificationResult::fromArray($content)
-            ),
+            Task::AUDIO_CLASSIFICATION, Task::IMAGE_CLASSIFICATION => new ObjectResult(ClassificationResult::fromArray($content)),
             Task::AUTOMATIC_SPEECH_RECOGNITION => new TextResult($content['text'] ?? ''),
             Task::CHAT_COMPLETION => new TextResult($content['choices'][0]['message']['content'] ?? ''),
             Task::FEATURE_EXTRACTION => new VectorResult(new Vector($content)),
