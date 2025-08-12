@@ -24,16 +24,6 @@ class MessageBagNormalizer extends ModelContractNormalizer implements Normalizer
 {
     use NormalizerAwareTrait;
 
-    protected function supportedDataClass(): string
-    {
-        return MessageBagInterface::class;
-    }
-
-    protected function supportsModel(Model $model): bool
-    {
-        return true;
-    }
-
     /**
      * @param MessageBagInterface $data
      *
@@ -50,5 +40,15 @@ class MessageBagNormalizer extends ModelContractNormalizer implements Normalizer
                 'messages' => $this->normalizer->normalize($data->getMessages(), $format, $context),
             ],
         ];
+    }
+
+    protected function supportedDataClass(): string
+    {
+        return MessageBagInterface::class;
+    }
+
+    protected function supportsModel(Model $model): bool
+    {
+        return true;
     }
 }

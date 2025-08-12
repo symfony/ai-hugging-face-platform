@@ -20,16 +20,6 @@ use Symfony\AI\Platform\Model;
  */
 class FileNormalizer extends ModelContractNormalizer
 {
-    protected function supportedDataClass(): string
-    {
-        return File::class;
-    }
-
-    protected function supportsModel(Model $model): bool
-    {
-        return true;
-    }
-
     /**
      * @param File $data
      *
@@ -44,5 +34,15 @@ class FileNormalizer extends ModelContractNormalizer
             'headers' => ['Content-Type' => $data->getFormat()],
             'body' => $data->asBinary(),
         ];
+    }
+
+    protected function supportedDataClass(): string
+    {
+        return File::class;
+    }
+
+    protected function supportsModel(Model $model): bool
+    {
+        return true;
     }
 }
