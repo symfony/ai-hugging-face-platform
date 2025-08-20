@@ -65,11 +65,11 @@ final readonly class ResultConverter implements PlatformResponseConverter
                 default => $content['error'],
             };
 
-            throw new InvalidArgumentException(\sprintf('API Client Error (%d): ', $httpResponse->getStatusCode()).$message);
+            throw new InvalidArgumentException(\sprintf('API Client Error (%d): "%s"', $httpResponse->getStatusCode(), $message));
         }
 
         if (200 !== $httpResponse->getStatusCode()) {
-            throw new RuntimeException('Unhandled response code: '.$httpResponse->getStatusCode());
+            throw new RuntimeException(\sprintf('Unhandled response code: %d', $httpResponse->getStatusCode()));
         }
 
         $task = $options['task'] ?? null;
