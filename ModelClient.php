@@ -12,7 +12,7 @@
 namespace Symfony\AI\Platform\Bridge\HuggingFace;
 
 use Symfony\AI\Platform\Model;
-use Symfony\AI\Platform\ModelClientInterface as PlatformModelClient;
+use Symfony\AI\Platform\ModelClientInterface;
 use Symfony\AI\Platform\Result\RawHttpResult;
 use Symfony\Component\HttpClient\EventSourceHttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -20,7 +20,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * @author Christopher Hertel <mail@christopher-hertel.de>
  */
-final readonly class ModelClient implements PlatformModelClient
+final readonly class ModelClient implements ModelClientInterface
 {
     private EventSourceHttpClient $httpClient;
 
