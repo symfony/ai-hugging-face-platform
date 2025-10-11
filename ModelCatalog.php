@@ -11,12 +11,12 @@
 
 namespace Symfony\AI\Platform\Bridge\HuggingFace;
 
-use Symfony\AI\Platform\ModelCatalog\DynamicModelCatalog;
+use Symfony\AI\Platform\ModelCatalog\FallbackModelCatalog;
 
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
  */
-final class ModelCatalog extends DynamicModelCatalog
+final class ModelCatalog extends FallbackModelCatalog
 {
     // HuggingFace supports a wide range of models dynamically
     // Models are identified by repository/model format (e.g., "microsoft/DialoGPT-medium")
