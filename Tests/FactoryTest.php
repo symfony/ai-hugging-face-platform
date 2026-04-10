@@ -14,7 +14,7 @@ namespace Symfony\AI\Platform\Bridge\HuggingFace\Tests;
 use PHPUnit\Framework\Attributes\TestDox;
 use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
-use Symfony\AI\Platform\Bridge\HuggingFace\PlatformFactory;
+use Symfony\AI\Platform\Bridge\HuggingFace\Factory;
 use Symfony\AI\Platform\Bridge\HuggingFace\Provider;
 use Symfony\AI\Platform\Platform;
 use Symfony\Component\HttpClient\EventSourceHttpClient;
@@ -23,12 +23,12 @@ use Symfony\Component\HttpClient\MockHttpClient;
 /**
  * @author Oskar Stark <oskarstark@googlemail.com>
  */
-final class PlatformFactoryTest extends TestCase
+final class FactoryTest extends TestCase
 {
     #[TestDox('Creates Platform with default provider and auto-generated components')]
     public function testCreateWithDefaults()
     {
-        $platform = PlatformFactory::create('test-api-key');
+        $platform = Factory::createPlatform('test-api-key');
 
         $this->assertInstanceOf(Platform::class, $platform);
     }
@@ -36,7 +36,7 @@ final class PlatformFactoryTest extends TestCase
     #[TestDox('Creates Platform with custom provider')]
     public function testCreateWithCustomProvider()
     {
-        $platform = PlatformFactory::create('test-api-key', Provider::COHERE);
+        $platform = Factory::createPlatform('test-api-key', Provider::COHERE);
 
         $this->assertInstanceOf(Platform::class, $platform);
     }
@@ -45,7 +45,7 @@ final class PlatformFactoryTest extends TestCase
     public function testCreateWithEventSourceHttpClient()
     {
         $httpClient = new EventSourceHttpClient(new MockHttpClient());
-        $platform = PlatformFactory::create('test-api-key', Provider::HF_INFERENCE, $httpClient);
+        $platform = Factory::createPlatform('test-api-key', Provider::HF_INFERENCE, $httpClient);
 
         $this->assertInstanceOf(Platform::class, $platform);
     }
@@ -71,7 +71,7 @@ final class PlatformFactoryTest extends TestCase
     #[TestWith([Provider::Z_AI])]
     public function testCreateWithDifferentProviders(string $provider)
     {
-        $platform = PlatformFactory::create('test-api-key', $provider);
+        $platform = Factory::createPlatform('test-api-key', $provider);
         $this->assertInstanceOf(Platform::class, $platform);
     }
 }
