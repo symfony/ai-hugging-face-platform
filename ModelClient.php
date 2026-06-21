@@ -26,13 +26,19 @@ final class ModelClient implements ModelClientInterface
     use JsonBodyEncodingTrait;
 
     private readonly EventSourceHttpClient $httpClient;
+    private readonly string $baseUrl;
 
+    /**
+     * @param string $baseUrl Base URL of the HuggingFace inference router, with or without a trailing slash
+     */
     public function __construct(
         HttpClientInterface $httpClient,
         private readonly string $provider,
         #[\SensitiveParameter] private readonly string $apiKey,
+        string $baseUrl = 'https://router.huggingface.co',
     ) {
         $this->httpClient = $httpClient instanceof EventSourceHttpClient ? $httpClient : new EventSourceHttpClient($httpClient);
+        $this->baseUrl = rtrim($baseUrl, '/');
     }
 
     public function supports(Model $model): bool
@@ -59,14 +65,14 @@ final class ModelClient implements ModelClientInterface
     {
         if (Task::CHAT_COMPLETION === $task) {
             if (Provider::HF_INFERENCE === $provider) {
-                return \sprintf('https://router.huggingface.co/%s/models/%s/v1/chat/completions', $provider, $model->getName());
+                return \sprintf('%s/%s/models/%s/v1/chat/completions', $this->baseUrl, $provider, $model->getName());
             }
 
             // Third-party providers use OpenAI-compatible endpoint
-            return \sprintf('https://router.huggingface.co/%s/v1/chat/completions', $provider);
+            return \sprintf('%s/%s/v1/chat/completions', $this->baseUrl, $provider);
         }
 
-        return \sprintf('https://router.huggingface.co/%s/models/%s', $provider, $model->getName());
+        return \sprintf('%s/%s/models/%s', $this->baseUrl, $provider, $model->getName());
     }
 
     /**

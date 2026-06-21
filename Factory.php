@@ -39,12 +39,13 @@ final class Factory
         ?Contract $contract = null,
         ?EventDispatcherInterface $eventDispatcher = null,
         string $name = 'huggingface',
+        string $baseUrl = 'https://router.huggingface.co',
     ): ProviderInterface {
         $httpClient = $httpClient instanceof EventSourceHttpClient ? $httpClient : new EventSourceHttpClient($httpClient);
 
         return new PlatformProvider(
             $name,
-            [new ModelClient($httpClient, $provider, $apiKey)],
+            [new ModelClient($httpClient, $provider, $apiKey, $baseUrl)],
             [new ResultConverter()],
             $modelCatalog,
             $contract ?? HuggingFaceContract::create(),
@@ -64,9 +65,10 @@ final class Factory
         ?EventDispatcherInterface $eventDispatcher = null,
         string $name = 'huggingface',
         ?ModelRouterInterface $modelRouter = null,
+        string $baseUrl = 'https://router.huggingface.co',
     ): Platform {
         return new Platform(
-            [self::createProvider($apiKey, $provider, $httpClient, $modelCatalog, $contract, $eventDispatcher, $name)],
+            [self::createProvider($apiKey, $provider, $httpClient, $modelCatalog, $contract, $eventDispatcher, $name, $baseUrl)],
             $modelRouter ?? new CatalogBasedModelRouter(),
             $eventDispatcher,
         );

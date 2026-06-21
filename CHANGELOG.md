@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.11
+----
+
+ * Add a `baseUrl` argument to the model client and the factory to target a custom HuggingFace inference router
+
 0.8
 ---
 

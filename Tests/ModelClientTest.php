@@ -53,6 +53,18 @@ final class ModelClientTest extends TestCase
         $modelClient->request($model, 'test input', $options);
     }
 
+    public function testCustomBaseUrlIsUsedAndTrailingSlashNormalized()
+    {
+        $httpClient = new MockHttpClient(function (string $method, string $url): MockResponse {
+            $this->assertSame('https://hf.example.com/test-provider/models/test-model', $url);
+
+            return new MockResponse('{"result": "test"}');
+        });
+
+        $modelClient = new ModelClient($httpClient, 'test-provider', 'test-api-key', 'https://hf.example.com/');
+        $modelClient->request(new Model('test-model'), 'test input');
+    }
+
     public static function urlTestCases(): \Iterator
     {
         $messageBag = new MessageBag();
