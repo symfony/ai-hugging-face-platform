@@ -332,6 +332,43 @@ final class ResultConverterTest extends TestCase
         (new ResultConverter())->convert($result, ['task' => Task::CHAT_COMPLETION]);
     }
 
+    /**
+     * @param array{arguments?: string} $function
+     */
+    #[TestWith([[]])]
+    #[TestWith([['arguments' => '{}']])]
+    public function testConvertToolCallWithoutArguments(array $function)
+    {
+        $response = new JsonMockResponse(['choices' => [['message' => ['tool_calls' => [
+            ['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'clock', ...$function]],
+        ]]]]]);
+        $httpClient = new MockHttpClient($response);
+        $result = new RawHttpResult($httpClient->request('GET', 'https://example.com'));
+
+        $converted = (new ResultConverter())->convert($result, ['task' => Task::CHAT_COMPLETION]);
+
+        $this->assertInstanceOf(ToolCallResult::class, $converted);
+        $this->assertSame([], $converted->getContent()[0]->getArguments());
+    }
+
+    #[TestWith(['null'])]
+    #[TestWith(['42'])]
+    #[TestWith(['"Paris"'])]
+    #[TestWith(['[]'])]
+    public function testConvertToolCallWithNonObjectArguments(string $arguments)
+    {
+        $response = new JsonMockResponse(['choices' => [['message' => ['tool_calls' => [
+            ['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'weather', 'arguments' => $arguments]],
+        ]]]]]);
+        $httpClient = new MockHttpClient($response);
+        $result = new RawHttpResult($httpClient->request('GET', 'https://example.com'));
+
+        $this->expectException(MalformedToolCallException::class);
+        $this->expectExceptionMessage('Arguments for the "weather" tool must be a JSON object.');
+
+        (new ResultConverter())->convert($result, ['task' => Task::CHAT_COMPLETION]);
+    }
+
     #[TestDox('Converts feature extraction response to VectorResult with correct data')]
     public function testConvertFeatureExtraction()
     {

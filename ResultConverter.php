@@ -137,6 +137,10 @@ final class ResultConverter implements ResultConverterInterface
                 } catch (\JsonException $e) {
                     throw new MalformedToolCallException(\sprintf('Model returned malformed JSON arguments for the "%s" tool: "%s"', $toolCall['function']['name'], $e->getMessage()), 0, $e);
                 }
+
+                if (!\is_array($arguments) || !str_starts_with(ltrim($toolCall['function']['arguments']), '{')) {
+                    throw new MalformedToolCallException(\sprintf('Arguments for the "%s" tool must be a JSON object.', $toolCall['function']['name']));
+                }
             }
 
             return new ToolCall($toolCall['id'], $toolCall['function']['name'], $arguments);

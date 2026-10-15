@@ -9,6 +9,7 @@ vision, audio processing, and more.
 - [Inference Providers overview](https://huggingface.co/docs/inference-providers/index)
 - [Tasks reference](https://huggingface.co/docs/inference-providers/tasks/index)
 - [Authentication / access tokens](https://huggingface.co/docs/hub/en/security-tokens)
+- [Function calling](https://huggingface.co/docs/inference-providers/guides/function-calling)
 
 ## Features
 
@@ -23,6 +24,7 @@ vision, audio processing, and more.
 - **Model Discovery**: Built-in API client to discover and query available models
 - **Flexible Input/Output**: Support for text, images, audio, and binary data
 - **Type-Safe Results**: Structured result objects for each task type
+- **Tool Calling**: Non-streaming chat tool calls with compatible models and inference providers
 
 ## Installation
 
