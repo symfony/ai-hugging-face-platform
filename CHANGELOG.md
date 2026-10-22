@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.15
+----
+
+ * Add support for tool calling in chat completion results
+
 0.11
 ----
 

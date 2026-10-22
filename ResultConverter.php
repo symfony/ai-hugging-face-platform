@@ -118,6 +118,10 @@ final class ResultConverter implements ResultConverterInterface
      */
     private static function convertChatCompletion(array $content): ToolCallResult|TextResult
     {
+        if (!isset($content['choices'][0]['message'])) {
+            throw new RuntimeException('Response does not contain choices.');
+        }
+
         $message = $content['choices'][0]['message'];
 
         if ([] === ($message['tool_calls'] ?? [])) {
@@ -125,12 +129,14 @@ final class ResultConverter implements ResultConverterInterface
         }
 
         return new ToolCallResult(array_map(static function (array $toolCall): ToolCall {
-            $arguments = $toolCall['function']['arguments'] ?? '';
+            $arguments = [];
 
-            try {
-                $arguments = '' === $arguments ? [] : json_decode($arguments, true, flags: \JSON_THROW_ON_ERROR);
-            } catch (\JsonException $e) {
-                throw new MalformedToolCallException(\sprintf('Model returned malformed JSON arguments for the "%s" tool: "%s"', $toolCall['function']['name'], $e->getMessage()), 0, $e);
+            if (isset($toolCall['function']['arguments']) && '' !== $toolCall['function']['arguments']) {
+                try {
+                    $arguments = json_decode($toolCall['function']['arguments'], true, flags: \JSON_THROW_ON_ERROR);
+                } catch (\JsonException $e) {
+                    throw new MalformedToolCallException(\sprintf('Model returned malformed JSON arguments for the "%s" tool: "%s"', $toolCall['function']['name'], $e->getMessage()), 0, $e);
+                }
             }
 
             return new ToolCall($toolCall['id'], $toolCall['function']['name'], $arguments);

@@ -249,6 +249,89 @@ final class ResultConverterTest extends TestCase
         (new ResultConverter())->convert($result, ['task' => Task::CHAT_COMPLETION]);
     }
 
+    #[TestDox('Converts chat completion with multiple tool calls and empty arguments')]
+    public function testConvertChatCompletionWithMultipleToolCalls()
+    {
+        $response = new JsonMockResponse([
+            'choices' => [[
+                'message' => [
+                    'role' => 'assistant',
+                    'content' => null,
+                    'tool_calls' => [
+                        [
+                            'id' => 'call_123',
+                            'type' => 'function',
+                            'function' => [
+                                'name' => 'get_weather',
+                                'arguments' => '{"city":"Lyon"}',
+                            ],
+                        ],
+                        [
+                            'id' => 'call_456',
+                            'type' => 'function',
+                            'function' => [
+                                'name' => 'get_time',
+                                'arguments' => '',
+                            ],
+                        ],
+                    ],
+                ],
+                'finish_reason' => 'tool_calls',
+            ]],
+        ]);
+        $httpClient = new MockHttpClient($response);
+        $httpResponse = $httpClient->request('GET', 'https://example.com');
+        $result = new RawHttpResult($httpResponse);
+
+        $convertedResult = (new ResultConverter())->convert($result, ['task' => Task::CHAT_COMPLETION]);
+
+        $this->assertInstanceOf(ToolCallResult::class, $convertedResult);
+        $toolCalls = $convertedResult->getContent();
+        $this->assertCount(2, $toolCalls);
+        $this->assertSame('get_weather', $toolCalls[0]->getName());
+        $this->assertSame(['city' => 'Lyon'], $toolCalls[0]->getArguments());
+        $this->assertSame('call_456', $toolCalls[1]->getId());
+        $this->assertSame('get_time', $toolCalls[1]->getName());
+        $this->assertSame([], $toolCalls[1]->getArguments());
+    }
+
+    #[TestDox('Converts chat completion with empty tool calls to TextResult')]
+    public function testConvertChatCompletionWithEmptyToolCalls()
+    {
+        $response = new JsonMockResponse([
+            'choices' => [[
+                'message' => [
+                    'role' => 'assistant',
+                    'content' => 'Hello there',
+                    'tool_calls' => [],
+                ],
+                'finish_reason' => 'stop',
+            ]],
+        ]);
+        $httpClient = new MockHttpClient($response);
+        $httpResponse = $httpClient->request('GET', 'https://example.com');
+        $result = new RawHttpResult($httpResponse);
+
+        $convertedResult = (new ResultConverter())->convert($result, ['task' => Task::CHAT_COMPLETION]);
+
+        $this->assertInstanceOf(TextResult::class, $convertedResult);
+        $this->assertSame('Hello there', $convertedResult->getContent());
+    }
+
+    #[TestDox('Throws when chat completion response does not contain choices')]
+    public function testConvertChatCompletionWithoutChoices()
+    {
+        $response = new JsonMockResponse(['id' => 'chatcmpl-123']);
+        $httpClient = new MockHttpClient($response);
+        $httpResponse = $httpClient->request('GET', 'https://example.com');
+        $result = new RawHttpResult($httpResponse);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Response does not contain choices.');
+
+        (new ResultConverter())->convert($result, ['task' => Task::CHAT_COMPLETION]);
+    }
+
     #[TestDox('Converts feature extraction response to VectorResult with correct data')]
     public function testConvertFeatureExtraction()
     {
