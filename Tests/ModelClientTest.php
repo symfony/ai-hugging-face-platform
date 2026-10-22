@@ -92,7 +92,7 @@ final class ModelClientTest extends TestCase
         ];
         yield 'chat completion with third-party provider' => [
             'task' => Task::CHAT_COMPLETION,
-            'expectedUrl' => 'https://router.huggingface.co/featherless-ai/v1/chat/completions',
+            'expectedUrl' => 'https://router.huggingface.co/v1/chat/completions',
             'provider' => Provider::FEATHERLESS_AI,
         ];
         yield 'feature extraction with third-party provider uses standard url' => [
@@ -106,7 +106,7 @@ final class ModelClientTest extends TestCase
         ];
     }
 
-    public function testThirdPartyProviderInjectsModelNameInPayload()
+    public function testThirdPartyProviderInjectsModelNameWithProviderSuffixInPayload()
     {
         $response = new MockResponse('{"result": "test"}');
         $httpClient = new MockHttpClient($response);
@@ -131,7 +131,7 @@ final class ModelClientTest extends TestCase
         $requestOptions = $response->getRequestOptions();
         $body = json_decode($requestOptions['body'], true);
 
-        $this->assertSame('HuggingFaceH4/zephyr-7b-beta', $body['model']);
+        $this->assertSame('HuggingFaceH4/zephyr-7b-beta:featherless-ai', $body['model']);
     }
 
     public function testProviderOptionOverridesDefaultProvider()
@@ -140,7 +140,7 @@ final class ModelClientTest extends TestCase
             'http_code' => 200,
         ]);
 
-        $expectedUrl = 'https://router.huggingface.co/hyperbolic/v1/chat/completions';
+        $expectedUrl = 'https://router.huggingface.co/v1/chat/completions';
 
         $httpClient = new MockHttpClient(function (string $method, string $url) use ($expectedUrl, $response): MockResponse {
             $this->assertSame($expectedUrl, $url);
@@ -158,7 +158,7 @@ final class ModelClientTest extends TestCase
         ]);
 
         $body = json_decode($response->getRequestOptions()['body'], true);
-        $this->assertSame('test-model', $body['model']);
+        $this->assertSame('test-model:hyperbolic', $body['model']);
     }
 
     public function testThirdPartyProviderWithNonChatTaskDoesNotInjectModelName()

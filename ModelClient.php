@@ -68,8 +68,8 @@ final class ModelClient implements ModelClientInterface
                 return \sprintf('%s/%s/models/%s/v1/chat/completions', $this->baseUrl, $provider, $model->getName());
             }
 
-            // Third-party providers use OpenAI-compatible endpoint
-            return \sprintf('%s/%s/v1/chat/completions', $this->baseUrl, $provider);
+            // The unified endpoint maps the Hugging Face model id to the provider's own model id
+            return \sprintf('%s/v1/chat/completions', $this->baseUrl);
         }
 
         return \sprintf('%s/%s/models/%s', $this->baseUrl, $provider, $model->getName());
@@ -110,9 +110,8 @@ final class ModelClient implements ModelClientInterface
             $payload['json'] = array_merge($payload['json'], $options);
         }
 
-        // Third-party providers need the model name in the JSON body
         if (Task::CHAT_COMPLETION === $task && Provider::HF_INFERENCE !== $provider && isset($payload['json'])) {
-            $payload['json']['model'] = $model->getName();
+            $payload['json']['model'] = \sprintf('%s:%s', $model->getName(), $provider);
         }
 
         // Encode the JSON payload ourselves to tolerate malformed UTF-8 (e.g. raw tool output)

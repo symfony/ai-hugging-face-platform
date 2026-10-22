@@ -8,6 +8,8 @@ vision, audio processing, and more.
 
 - [Inference Providers overview](https://huggingface.co/docs/inference-providers/index)
 - [Tasks reference](https://huggingface.co/docs/inference-providers/tasks/index)
+- [Chat completion](https://huggingface.co/docs/inference-providers/tasks/chat-completion)
+- [OpenAI-compatible chat completions endpoint](https://huggingface.co/docs/inference-providers/index#alternative-openai-compatible-chat-completions-endpoint-chat-only)
 - [Authentication / access tokens](https://huggingface.co/docs/hub/en/security-tokens)
 - [Function calling](https://huggingface.co/docs/inference-providers/guides/function-calling)
 

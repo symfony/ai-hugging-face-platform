@@ -86,7 +86,7 @@ final class FactoryTest extends TestCase
     }
 
     #[TestWith([Provider::HF_INFERENCE, 'https://router.huggingface.co/hf-inference/models/test/model/v1/chat/completions'])]
-    #[TestWith([Provider::TOGETHER, 'https://router.huggingface.co/together/v1/chat/completions'])]
+    #[TestWith([Provider::TOGETHER, 'https://router.huggingface.co/v1/chat/completions'])]
     public function testToolCallingRoundTrip(string $provider, string $expectedUrl)
     {
         $toolCall = ['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'weather', 'arguments' => '{"city":"Paris"}']];
@@ -133,7 +133,7 @@ final class FactoryTest extends TestCase
             $this->assertSame(['city' => ['type' => 'string', 'description' => 'The city to look up']], $request['body']['tools'][0]['function']['parameters']['properties']);
             $this->assertArrayNotHasKey('task', $request['body']);
             if (Provider::HF_INFERENCE !== $provider) {
-                $this->assertSame('test/model', $request['body']['model']);
+                $this->assertSame('test/model:'.$provider, $request['body']['model']);
             }
         }
         $this->assertSame([
