@@ -3,7 +3,7 @@
         {
             "request": {
                 "method": "POST",
-                "url": "https://router.huggingface.co/cerebras/v1/chat/completions"
+                "url": "https://router.huggingface.co/v1/chat/completions"
             },
             "response": {
                 "status": 200,
